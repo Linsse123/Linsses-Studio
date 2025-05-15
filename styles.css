@@ -118,58 +118,58 @@ footer {
   }
 
   .card {
-    margin-bottom: 1.5rem;
+    margen inferior: 1.5rem;
   }
 
-  .card img {
-    width: 100%;
-    height: auto;
+ .imagen de tarjeta {
+    ancho: 100%;
+    altura: auto;
   }
 
-  .btn-whatsapp {
-    font-size: 1rem;
-    padding: 0.5rem 1.5rem;
+ .btn-whatsapp {
+    tamaño de fuente: 1rem;
+    acolchado: 0,5rem 1.5rem;
   }
 
-  footer {
-    padding: 1rem 0;
+ pie {
+    acolchado: 1rem 0;
   }
 }
 
 /* Imágenes Responsivas */
 img {
-  max-width: 100%;
-  height: auto;
-  display: block;
-  margin: 0 auto;
+  ancho máximo: 100%;
+  altura: auto;
+  visualizar: bloque;
+  margen: 0 auto;
 }
 
-/* Espaciado Horizontal para Imágenes */
-.row img {
-  margin-right: 10px;
-  margin-bottom: 10px;
+/*Espaciado Horizontal para Imágenes*/
+. .fila img {
+  margen derecho: 10px;
+  margen inferior: 10px;
 }
 
 /* Diseño Horizontal para Lista e Imagen */
-.horizontal-list {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  margin: 2rem 0;
+. .lista horizontal {
+  visualizar: flex;
+  flex-direction: fila;
+  align-items: centro;
+  justificar-contenido: centro;
+  brecha: 1rem;
+  margen: 2rem 0;
 }
-.horizontal-list img {
-  max-width: 100px;
-  height: auto;
-  display: inline-block;
+. .imagen de lista horizontal {
+  ancho máximo: 100px;
+  altura: auto;
+  visualizar: bloque en línea;
 }
 
-main {
-  margin-left: 10px;
-  margin-right: 10px;
+principal {
+  margen izquierdo: 10px;
+  margen derecho: 10px;
 }
 
 #quick-access-button {
-  margin: 0; /* Asegúrate de que no haya margen adicional en el botón */
+  margen: 0; /* Asegurate de que no haya marca adicional en el botón */
 }
