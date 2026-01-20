@@ -207,23 +207,25 @@ if uploaded_files:
             # 2. ASEGURAR RGB
             bg_img = bg_img.convert("RGB")
             
-            # 3. CONVERTIR A BASE64 STRING (Bypass total del procesamiento de streamlit)
+            # 3. Limpiamos la imagen guardándola en memoria y volviéndola a abrir
+            # Esto elimina problemas "fantasmas" de formato o metadatos que dejan el canvas en blanco
             buffered = io.BytesIO()
-            bg_img.save(buffered, format="JPEG", quality=85)
-            img_str = base64.b64encode(buffered.getvalue()).decode()
-            bg_image_url = f"data:image/jpeg;base64,{img_str}"
+            bg_img.save(buffered, format="JPEG", quality=90)
+            buffered.seek(0)
+            clean_image = Image.open(buffered)
             
-            # Canvas: Le pasamos la URL (string)
+            # Canvas: Le pasamos la imagen LIMPIA (Objeto PIL)
+            # Nota: background_image debe ser un objeto imagen, no un string.
             canvas_results[filename] = st_canvas(
                 fill_color="rgba(255, 0, 0, 0.3)",
                 stroke_color="#FF0000",
                 background_color="#EEE", 
-                background_image=bg_image_url, 
+                background_image=clean_image, 
                 update_streamlit=True,
-                height=new_height,
-                width=custom_width,
+                height=int(new_height),
+                width=int(custom_width),
                 drawing_mode="rect",
-                key=f"canvas_{filename}",
+                key=f"canvas_{filename}_{custom_width}", # Key dinámico para forzar redibujado al cambiar tamaño
             )
 
     st.divider()
