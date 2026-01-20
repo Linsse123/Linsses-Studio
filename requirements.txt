@@ -1,4 +1,4 @@
-streamlit==1.32.0
+streamlit==1.23.0
 google-generativeai
 pdf2image
 pillow

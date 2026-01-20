@@ -146,6 +146,10 @@ with st.sidebar:
     dpi = st.select_slider("Calidad Visual", [100, 150], value=100)
     conf = st.slider("Confianza Mínima", 0.05, 0.9, 0.50)
     st.info(f"Modelo: {WORKFLOW_ID}")
+    
+    with st.expander("ℹ️ Info del Sistema"):
+        st.caption(f"Python: {platform.python_version()}")
+        st.caption(f"Streamlit: {st.__version__}")
 
 # Inicializamos el estado para guardar las imágenes cargadas
 if "pdf_images" not in st.session_state:
