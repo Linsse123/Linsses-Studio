@@ -9,7 +9,7 @@ import zipfile
 import gc
 import os
 import platform
-from streamlit_drawable_canvas import st_canvas
+from streamlit_drawable_canvas_jsretry import st_canvas
 
 # --- CONFIGURACIÓN ---
 st.set_page_config(page_title="Detector Francotirador Pro (Lista)", layout="wide")

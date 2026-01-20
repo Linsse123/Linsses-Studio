@@ -7,4 +7,4 @@ streamlit-lottie
 streamlit-extras
 requests
 python-dotenv
-streamlit-drawable-canvas
+streamlit-drawable-canvas-jsretry
