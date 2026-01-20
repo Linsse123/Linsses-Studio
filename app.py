@@ -170,8 +170,18 @@ if uploaded_files:
 
             for f in new_files:
                 # Si poppler_path es None, pdf2image buscará en el PATH del sistema (ideal para Cloud)
-                images = convert_from_bytes(f.getvalue(), dpi=dpi, fmt="jpeg", poppler_path=poppler_path)
-                st.session_state.pdf_images[f.name] = images[0]
+                try:
+                    images = convert_from_bytes(f.getvalue(), dpi=dpi, fmt="jpeg", poppler_path=poppler_path)
+                    if images:
+                        st.session_state.pdf_images[f.name] = images[0]
+                        st.success(f"✅ Convertido: {f.name} ({images[0].size})")
+                    else:
+                        st.error(f"⚠️ El archivo {f.name} no generó imágenes.")
+                except Exception as e:
+                    st.error(f"❌ Error procesando {f.name}: {str(e)}")
+                    # Mostrar ayuda si es error de Poppler
+                    if "poppler" in str(e).lower():
+                        st.warning("Parece un error de Poppler. Verifica que 'packages.txt' incluya 'poppler-utils'.")
     
     st.success(f"📂 {len(st.session_state.pdf_images)} planos cargados. Dibuja las zonas en la lista de abajo.")
 
@@ -184,8 +194,12 @@ if uploaded_files:
         # Usamos st.expander para crear la lista colapsable
         with st.expander(f"📄 Plano: {filename}", expanded=True):
             w_img, h_img = img.size
-            canvas_width = 800
+            custom_width = st.slider("Ajustar ancho de imagen", 600, 1200, 800, 50, key=f"width_{filename}")
+            canvas_width = custom_width
             canvas_height = int(h_img * (canvas_width / w_img))
+            
+            # DEBUG: Confirmar que la imagen existe
+            st.caption(f"🔧 Debug: Mostrando imagen de {w_img}x{h_img}px.")
             
             # Canvas único para este archivo (usamos filename como key)
             canvas_results[filename] = st_canvas(
