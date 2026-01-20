@@ -1,6 +1,6 @@
-streamlit==1.28.0
+streamlit==1.30.0
 pdf2image
-pillow==9.5.0
+pillow
 pandas
 requests
 streamlit-drawable-canvas
