@@ -193,22 +193,28 @@ if uploaded_files:
     for filename, img in st.session_state.pdf_images.items():
         # Usamos st.expander para crear la lista colapsable
         with st.expander(f"📄 Plano: {filename}", expanded=True):
-            w_img, h_img = img.size
             custom_width = st.slider("Ajustar ancho de imagen", 600, 1200, 800, 50, key=f"width_{filename}")
-            canvas_width = custom_width
-            canvas_height = int(h_img * (canvas_width / w_img))
             
-            # DEBUG: Confirmar que la imagen existe
-            st.caption(f"🔧 Debug: Mostrando imagen de {w_img}x{h_img}px.")
+            # 1. Crear una copia RE-ESCALADA para visualización (Display Image)
+            # Esto corrige el problema de que la imagen original sea muy grande y no se vea
+            bg_img = img.copy()
+            w_original, h_original = bg_img.size
+            new_height = int(h_original * (custom_width / w_original))
             
-            # Canvas único para este archivo (usamos filename como key)
+            # Redimensionamos la imagen que va al Canvas
+            bg_img = bg_img.resize((custom_width, new_height), Image.LANCZOS)
+            
+            # DEBUG: Confirmar
+            st.caption(f"🔧 Vista previa: {custom_width}x{new_height}px (Original: {w_original}x{h_original}px)")
+            
+            # Canvas usa la imagen REDIMENSIONADA
             canvas_results[filename] = st_canvas(
                 fill_color="rgba(0, 255, 0, 0.1)",
                 stroke_color="#00FF00",
-                background_image=img,
+                background_image=bg_img,
                 update_streamlit=True,
-                height=canvas_height,
-                width=canvas_width,
+                height=new_height,
+                width=custom_width,
                 drawing_mode="rect",
                 key=f"canvas_{filename}",
             )
