@@ -9,6 +9,8 @@ import zipfile
 import gc
 import os
 import platform
+from streamlit_drawable_canvas import st_canvas
+
 # --- MONKEY PATCH (PARCHE DE COMPATIBILIDAD) ---
 # Esto arregla el error "AttributeError: module 'streamlit.elements.image' has no attribute 'image_to_url'"
 # Restauramos la función que Streamlit eliminó y que la librería necesita.
