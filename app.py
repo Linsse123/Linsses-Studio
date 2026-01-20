@@ -214,16 +214,11 @@ if uploaded_files:
             img_str = base64.b64encode(buffered.getvalue()).decode()
             bg_image_url = f"data:image/jpeg;base64,{img_str}"
             
-            # Canvas usa la URL Base64 explícita
+            # Canvas usa la imagen procesada
             canvas_results[filename] = st_canvas(
                 fill_color="rgba(255, 0, 0, 0.3)",
                 stroke_color="#FF0000",
-                background_image=Image.open(buffered), # Regresamos a pasar la imagen, intentando nuevo approach si falla el URL
-                # Nota: Algunos versiones del componente prefieren el objeto, otras el URL.
-                # Si el anterior fallaba, intentemos pasar el objeto recien guardado/abierto para limpiar metadata.
-                # CORRECCION: El componente oficial suele fallar con URLs largas.
-                # Vamos a probar pasando el 'bg_img' LIMPIO (nueva instancia).
-                background_image=bg_img, 
+                background_image=bg_img,
                 update_streamlit=True,
                 height=new_height,
                 width=custom_width,
