@@ -217,10 +217,7 @@ if uploaded_files:
             canvas_results[filename] = st_canvas(
                 fill_color="rgba(255, 0, 0, 0.3)",
                 stroke_color="#FF0000",
-                background_image=None, # Ponemos None aquí para evitar conflictos si la librería espera algo
-                background_color="#EEE", # Color de fondo por si acaso
-                # Pasamos la imagen usando el argumento especial para URLs si existe, o background_image
-                # La librería usa 'background_image' para todo.
+                background_color="#EEE", 
                 background_image=bg_image_url, 
                 update_streamlit=True,
                 height=new_height,
