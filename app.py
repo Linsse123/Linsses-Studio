@@ -27,7 +27,8 @@ if not hasattr(streamlit.elements.image, "image_to_url"):
         buffered = io.BytesIO()
         image.save(buffered, format="JPEG")
         img_str = base64.b64encode(buffered.getvalue()).decode()
-        return [f"data:image/jpeg;base64,{img_str}"]
+        # CORRECCION IMPORTANTE: La librería espera un string directo, no una lista.
+        return f"data:image/jpeg;base64,{img_str}"
 
     streamlit.elements.image.image_to_url = image_to_url
 
