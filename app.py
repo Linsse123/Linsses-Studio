@@ -14,31 +14,7 @@ import platform
 # --- CONFIGURACIÓN (DEBE SER LO PRIMERO) ---
 st.set_page_config(page_title="Detector Francotirador Pro (Lista)", layout="wide")
 
-# --- MONKEY PATCH (CRÍTICO: DEBE IR ANTES DE IMPORTAR CANVAS) ---
-# Forzamos la función image_to_url ANTES de que la librería la cargue.
-import streamlit.elements.image
-from streamlit.errors import StreamlitAPIException
 
-def image_to_url(image, width, clamp, channels, output_format, image_id, allow_emoji=False, **kwargs):
-    """Re-implementación simplificada de image_to_url para compatibilidad."""
-
-    import base64
-    import io # Importación segura local
-    
-    # Asegurar formato compatible (RGB) antes de convertir
-    if hasattr(image, "convert"):
-        image = image.convert("RGB")
-        
-    # Convertir a bytes
-    buffered = io.BytesIO()
-    image.save(buffered, format="JPEG", quality=85)
-    img_str = base64.b64encode(buffered.getvalue()).decode()
-    
-    # Retornar string data:image estándar
-    return f"data:image/jpeg;base64,{img_str}"
-
-streamlit.elements.image.image_to_url = image_to_url
-# ------------------------------------------------------------------
 
 from streamlit_drawable_canvas import st_canvas
 from streamlit_drawable_canvas import st_canvas as st_canvas_fix # Alias por seguridad
