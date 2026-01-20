@@ -204,13 +204,18 @@ if uploaded_files:
             # Redimensionamos la imagen que va al Canvas
             bg_img = bg_img.resize((custom_width, new_height), Image.LANCZOS)
             
-            # DEBUG: Confirmar
-            st.caption(f"🔧 Vista previa: {custom_width}x{new_height}px (Original: {w_original}x{h_original}px)")
+            # ASEGURAR RGB (Crucial para canvas web)
+            bg_img = bg_img.convert("RGB")
+            
+            # DEBUG: Confirmar visualmente que la imagen existe
+            st.caption(f"🔧 Vista previa ({custom_width}x{new_height}px):")
+            st.image(bg_img, use_column_width=True)
+            st.info("⬆️ Si ves la imagen de arriba, el plano se cargó bien. Dibuja en el recuadro verde de abajo 👇")
             
             # Canvas usa la imagen REDIMENSIONADA
             canvas_results[filename] = st_canvas(
-                fill_color="rgba(0, 255, 0, 0.1)",
-                stroke_color="#00FF00",
+                fill_color="rgba(255, 0, 0, 0.3)",  # Cambio a rojo para mejor contraste
+                stroke_color="#FF0000",
                 background_image=bg_img,
                 update_streamlit=True,
                 height=new_height,
