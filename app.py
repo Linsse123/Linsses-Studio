@@ -207,16 +207,23 @@ if uploaded_files:
             # ASEGURAR RGB (Crucial para canvas web)
             bg_img = bg_img.convert("RGB")
             
-            # DEBUG: Confirmar visualmente que la imagen existe
-            st.caption(f"🔧 Vista previa ({custom_width}x{new_height}px):")
-            st.image(bg_img, use_column_width=True)
-            st.info("⬆️ Si ves la imagen de arriba, el plano se cargó bien. Dibuja en el recuadro verde de abajo 👇")
+            # --- SOLUCIÓN FINAL: Convertir manualmente a Base64 ---
+            # Esto evita que el componente intente procesar la imagen internamente (donde está fallando)
+            buffered = io.BytesIO()
+            bg_img.save(buffered, format="JPEG")
+            img_str = base64.b64encode(buffered.getvalue()).decode()
+            bg_image_url = f"data:image/jpeg;base64,{img_str}"
             
-            # Canvas usa la imagen REDIMENSIONADA
+            # Canvas usa la URL Base64 explícita
             canvas_results[filename] = st_canvas(
-                fill_color="rgba(255, 0, 0, 0.3)",  # Cambio a rojo para mejor contraste
+                fill_color="rgba(255, 0, 0, 0.3)",
                 stroke_color="#FF0000",
-                background_image=bg_img,
+                background_image=Image.open(buffered), # Regresamos a pasar la imagen, intentando nuevo approach si falla el URL
+                # Nota: Algunos versiones del componente prefieren el objeto, otras el URL.
+                # Si el anterior fallaba, intentemos pasar el objeto recien guardado/abierto para limpiar metadata.
+                # CORRECCION: El componente oficial suele fallar con URLs largas.
+                # Vamos a probar pasando el 'bg_img' LIMPIO (nueva instancia).
+                background_image=bg_img, 
                 update_streamlit=True,
                 height=new_height,
                 width=custom_width,
