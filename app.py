@@ -15,15 +15,20 @@ import platform
 import streamlit.elements.image
 from streamlit.errors import StreamlitAPIException
 
-def image_to_url(image, width, clamp, channels, output_format, image_id, allow_emoji=False):
+def image_to_url(image, width, clamp, channels, output_format, image_id, allow_emoji=False, **kwargs):
     """Re-implementación simplificada de image_to_url para compatibilidad."""
-    from streamlit.web.server.server import Server
     import base64
     
-    # Convertir a bytes si es necesario (asumimos PIL Image mayormente)
+    # Asegurar formato compatible (RGB) antes de convertir
+    if hasattr(image, "convert"):
+        image = image.convert("RGB")
+        
+    # Convertir a bytes
     buffered = io.BytesIO()
-    image.save(buffered, format="JPEG")
+    image.save(buffered, format="JPEG", quality=85)
     img_str = base64.b64encode(buffered.getvalue()).decode()
+    
+    # Retornar string data:image estándar
     return f"data:image/jpeg;base64,{img_str}"
 
 streamlit.elements.image.image_to_url = image_to_url
