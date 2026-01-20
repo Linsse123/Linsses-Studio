@@ -201,24 +201,27 @@ if uploaded_files:
             w_original, h_original = bg_img.size
             new_height = int(h_original * (custom_width / w_original))
             
-            # Redimensionamos la imagen que va al Canvas
+            # 1. Redimensionamos PRIMERO (Crucial para que no sea gigante)
             bg_img = bg_img.resize((custom_width, new_height), Image.LANCZOS)
             
-            # ASEGURAR RGB (Crucial para canvas web)
+            # 2. ASEGURAR RGB
             bg_img = bg_img.convert("RGB")
             
-            # --- SOLUCIÓN FINAL: Convertir manualmente a Base64 ---
-            # Esto evita que el componente intente procesar la imagen internamente (donde está fallando)
+            # 3. CONVERTIR A BASE64 STRING (Bypass total del procesamiento de streamlit)
             buffered = io.BytesIO()
-            bg_img.save(buffered, format="JPEG")
+            bg_img.save(buffered, format="JPEG", quality=85)
             img_str = base64.b64encode(buffered.getvalue()).decode()
             bg_image_url = f"data:image/jpeg;base64,{img_str}"
             
-            # Canvas usa la imagen procesada
+            # Canvas: Le pasamos la URL (string)
             canvas_results[filename] = st_canvas(
                 fill_color="rgba(255, 0, 0, 0.3)",
                 stroke_color="#FF0000",
-                background_image=bg_img,
+                background_image=None, # Ponemos None aquí para evitar conflictos si la librería espera algo
+                background_color="#EEE", # Color de fondo por si acaso
+                # Pasamos la imagen usando el argumento especial para URLs si existe, o background_image
+                # La librería usa 'background_image' para todo.
+                background_image=bg_image_url, 
                 update_streamlit=True,
                 height=new_height,
                 width=custom_width,
