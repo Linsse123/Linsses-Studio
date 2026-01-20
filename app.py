@@ -9,25 +9,14 @@ import zipfile
 import gc
 import os
 import platform
-from streamlit_drawable_canvas import st_canvas
 
-# --- MONKEY PATCH (PARCHE DE COMPATIBILIDAD) ---
-# Esto arregla el error "AttributeError: module 'streamlit.elements.image' has no attribute 'image_to_url'"
-# Restauramos la función que Streamlit eliminó y que la librería necesita.
+# --- MONKEY PATCH (CRÍTICO: DEBE IR ANTES DE IMPORTAR CANVAS) ---
+# Forzamos la función image_to_url ANTES de que la librería la cargue.
 import streamlit.elements.image
 from streamlit.errors import StreamlitAPIException
 
-# Elimino el check 'if not hasattr' para FORZAR siempre nuestro parche.
-# Esto asegura que usemos nuestra versión simplificada que funciona, sin importar la versión de Streamlit.
 def image_to_url(image, width, clamp, channels, output_format, image_id, allow_emoji=False):
     """Re-implementación simplificada de image_to_url para compatibilidad."""
-    # Debug visual para saber si se está usando el parche
-    try:
-        import streamlit as st
-        # st.toast("🔧 Debug: Usando Monkey Patch de imagen", icon="🛠️") 
-        pass
-    except: pass
-    
     from streamlit.web.server.server import Server
     import base64
     
@@ -35,12 +24,13 @@ def image_to_url(image, width, clamp, channels, output_format, image_id, allow_e
     buffered = io.BytesIO()
     image.save(buffered, format="JPEG")
     img_str = base64.b64encode(buffered.getvalue()).decode()
-    # CORRECCION IMPORTANTE: La librería espera un string directo, no una lista.
     return f"data:image/jpeg;base64,{img_str}"
 
 streamlit.elements.image.image_to_url = image_to_url
-
 # ------------------------------------------------------------------
+
+from streamlit_drawable_canvas import st_canvas
+from streamlit_drawable_canvas import st_canvas as st_canvas_fix # Alias por seguridad
 
 # --- CONFIGURACIÓN ---
 st.set_page_config(page_title="Detector Francotirador Pro (Lista)", layout="wide")
