@@ -1,0 +1,10 @@
+streamlit
+google-generativeai
+pdf2image
+pillow
+pandas
+streamlit-lottie
+streamlit-extras
+requests
+python-dotenv
+streamlit-drawable-canvas
