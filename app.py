@@ -9,7 +9,27 @@ import zipfile
 import gc
 import os
 import platform
-from streamlit_drawable_canvas import st_canvas
+# --- MONKEY PATCH (PARCHE DE COMPATIBILIDAD) ---
+# Esto arregla el error "AttributeError: module 'streamlit.elements.image' has no attribute 'image_to_url'"
+# Restauramos la función que Streamlit eliminó y que la librería necesita.
+import streamlit.elements.image
+from streamlit.errors import StreamlitAPIException
+
+if not hasattr(streamlit.elements.image, "image_to_url"):
+    def image_to_url(image, width, clamp, channels, output_format, image_id, allow_emoji=False):
+        """Re-implementación simplificada de image_to_url para compatibilidad."""
+        from streamlit.web.server.server import Server
+        import base64
+        
+        # Convertir a bytes si es necesario (asumimos PIL Image mayormente)
+        buffered = io.BytesIO()
+        image.save(buffered, format="JPEG")
+        img_str = base64.b64encode(buffered.getvalue()).decode()
+        return [f"data:image/jpeg;base64,{img_str}"]
+
+    streamlit.elements.image.image_to_url = image_to_url
+
+# ------------------------------------------------------------------
 
 # --- CONFIGURACIÓN ---
 st.set_page_config(page_title="Detector Francotirador Pro (Lista)", layout="wide")
