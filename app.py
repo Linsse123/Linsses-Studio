@@ -201,40 +201,51 @@ if uploaded_files:
     for filename, img in st.session_state.pdf_images.items():
         # Usamos st.expander para crear la lista colapsable
         with st.expander(f"📄 Plano: {filename}", expanded=True):
-            custom_width = st.slider("Ajustar ancho de imagen", 600, 1200, 800, 50, key=f"width_{filename}")
+            # --- NUEVA ESTRATEGIA: EMPALME VISUAL (CSS OVERLAY) ---
+            # 1. Definimos tamaño fijo para simplicidad y evitar errores
+            canvas_width = 800
+            w_original, h_original = img.size
+            new_height = int(h_original * (canvas_width / w_original))
             
-            # 1. Crear una copia RE-ESCALADA para visualización (Display Image)
-            # Esto corrige el problema de que la imagen original sea muy grande y no se vea
-            bg_img = img.copy()
-            w_original, h_original = bg_img.size
-            new_height = int(h_original * (custom_width / w_original))
+            # 2. Preparamos la imagen para mostrarla con st.image (que SÍ funciona)
+            display_img = img.resize((canvas_width, new_height), Image.LANCZOS)
             
-            # 1. Redimensionamos PRIMERO (Crucial para que no sea gigante)
-            bg_img = bg_img.resize((custom_width, new_height), Image.LANCZOS)
-            
-            # 2. ASEGURAR RGB
-            bg_img = bg_img.convert("RGB")
-            
-            # 3. Limpiamos la imagen guardándola en memoria y volviéndola a abrir
-            # Esto elimina problemas "fantasmas" de formato o metadatos que dejan el canvas en blanco
-            buffered = io.BytesIO()
-            bg_img.save(buffered, format="JPEG", quality=90)
-            buffered.seek(0)
-            clean_image = Image.open(buffered)
-            
-            # Canvas: Le pasamos la imagen LIMPIA (Objeto PIL)
-            # Nota: background_image debe ser un objeto imagen, no un string.
-            canvas_results[filename] = st_canvas(
-                fill_color="rgba(255, 0, 0, 0.3)",
-                stroke_color="#FF0000",
-                background_color="#EEE", 
-                background_image=clean_image, 
-                update_streamlit=True,
-                height=int(new_height),
-                width=int(custom_width),
-                drawing_mode="rect",
-                key=f"canvas_{filename}_{custom_width}", # Key dinámico para forzar redibujado al cambiar tamaño
-            )
+            # 3. Layout de superposición
+            # Usamos columnas para controlar el ancho exacto
+            c1, _ = st.columns([1, 0.01]) 
+            with c1:
+                # A) La Imagen de Fondo (Referencia)
+                st.image(display_img, width=canvas_width)
+                
+                # B) El Canvas Transparente "Empalmado" encima
+                # Calculamos el margen negativo exacto para subir el canvas sobre la imagen
+                # Nota: Streamlit a veces añade padding, ajustamos con un valor seguro.
+                st.markdown(
+                    f"""
+                    <style>
+                    div[data-testid="stImage"] {{
+                        margin-bottom: -{new_height}px;
+                    }}
+                    iframe {{
+                        position: relative;
+                        z-index: 1;
+                    }}
+                    </style>
+                    """, unsafe_allow_html=True
+                )
+                
+                # C) El Canvas (Sin imagen de fondo, totalmente transparente)
+                canvas_results[filename] = st_canvas(
+                    fill_color="rgba(255, 0, 0, 0.3)",
+                    stroke_color="#FF0000",
+                    background_color="rgba(0, 0, 0, 0)", # Transparente
+                    background_image=None,               # ¡Sin imagen! Adiós errores.
+                    update_streamlit=True,
+                    height=new_height,
+                    width=canvas_width,
+                    drawing_mode="rect",
+                    key=f"canvas_{filename}_overlay",
+                )
 
     st.divider()
     
