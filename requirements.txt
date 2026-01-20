@@ -1,10 +1,6 @@
-streamlit==1.23.0
-google-generativeai
+streamlit==1.30.0
 pdf2image
 pillow
 pandas
-streamlit-lottie
-streamlit-extras
 requests
-python-dotenv
 streamlit-drawable-canvas
