@@ -1,0 +1,6 @@
+[cite_start]FROM python:3.9-slim [cite: 2]
+[cite_start]WORKDIR /app [cite: 2]
+COPY . [cite_start]. [cite: 2]
+[cite_start]RUN pip install --no-cache-dir -r requirements.txt [cite: 2]
+[cite_start]EXPOSE 5000 [cite: 2]
+[cite_start]CMD ["python", "app.py"] [cite: 2]
