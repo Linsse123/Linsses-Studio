@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Architect AI - Multi-Scanner Ultra</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root { 
+            --bg: #0f172a; --sidebar: #1e293b; --primary: #6366f1; 
+            --accent: #818cf8; --success: #10b981; --text: #f1f5f9;
+        }
+        
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; height: 100vh; overflow: hidden; }
+
+        /* Sidebar Fijo */
+        .sidebar { width: 350px; background: var(--sidebar); padding: 20px; display: flex; flex-direction: column; gap: 15px; box-shadow: 4px 0 15px rgba(0,0,0,0.3); z-index: 10; flex-shrink: 0; overflow-y: auto; }
+
+        /* Panel central Scroll */
+        .viewport { flex: 1; overflow-y: auto; padding: 40px 20px; display: flex; flex-direction: column; align-items: center; gap: 60px; scroll-behavior: smooth; }
+        
+        .canvas-container { position: relative; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); width: 100%; max-width: 1200px; background: white; border-radius: 8px; flex-shrink: 0; }
+        
+        .doc-header { background: #475569; color: white; padding: 12px 20px; font-size: 13px; font-weight: 600; border-radius: 8px 8px 0 0; display: flex; justify-content: space-between; }
+
+        canvas { display: block; cursor: crosshair; width: 100% !important; height: auto !important; }
+
+        /* Sidebar Results */
+        .results-container { display: flex; flex-direction: column; gap: 12px; }
+        .doc-summary { background: rgba(255,255,255,0.05); border-radius: 8px; padding: 12px; border-left: 4px solid var(--primary); }
+        .doc-title { font-weight: 600; font-size: 13px; color: var(--accent); margin-bottom: 8px; display: block; overflow: hidden; text-overflow: ellipsis; }
+        
+        .zone-result { display: flex; justify-content: space-between; align-items: center; background: #334155; padding: 8px 12px; margin-top: 5px; border-radius: 6px; font-size: 12px; }
+        
+        /* Animación de carga para las zonas en progreso */
+        .count-badge { background: var(--success); color: white; padding: 2px 8px; border-radius: 12px; font-weight: bold; min-width: 20px; text-align: center; }
+        .badge-processing { background: #475569; animation: pulse 1.2s infinite ease-in-out; }
+
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+
+        .btn-upload { background: var(--primary); color: white; border: none; padding: 14px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .btn-upload:hover { background: var(--accent); transform: translateY(-1px); }
+
+        /* NOTA: He eliminado el div de "loading" global para que nunca bloquee la vista */
+    </style>
+</head>
+<body>
+    
+    <div class="sidebar">
+        <h2 style="margin-top:0;">◪ DETECTOR DE PUERTAS</h2>
+        <button class="btn-upload" onclick="document.getElementById('pdfInput').click()">+ Cargar Planos (PDF)</button>
+        <input type="file" id="pdfInput" accept="application/pdf" multiple style="display:none">
+        
+        <div style="background: #334155; padding: 15px; border-radius: 10px; margin-top: 10px;">
+            <label style="font-size: 11px; color: #94a3b8; font-weight: bold;">SENSIBILIDAD IA: <span id="confVal">50%</span></label>
+            <input type="range" min="10" max="95" value="50" id="confSlider" style="width:100%; margin-top:8px;" oninput="document.getElementById('confVal').innerText=this.value+'%'">
+        </div>
+
+        <div id="resultsList" class="results-container" style="margin-top: 20px;">
+            </div>
+    </div>
+
+    <div class="viewport" id="viewer">
+        <div id="emptyState" style="color: #475569; margin-top: 100px; text-align: center;">
+            <p style="font-size: 60px; margin: 0;">📋</p>
+            <p>Sube uno o más planos. Puedes hacer múltiples selecciones seguidas.</p>
+        </div>
+    </div>
+
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+        let documents = [];
+
+        document.getElementById('pdfInput').onchange = async (e) => {
+            if (e.target.files.length > 0) {
+                document.getElementById('emptyState').style.display = 'none';
+                for (const file of e.target.files) {
+                    await processNewPDF(file);
+                }
+            }
+        };
+
+        async function processNewPDF(file) {
+            const docId = 'doc-' + Math.random().toString(36).substr(2, 9);
+            const container = document.createElement('div');
+            container.className = 'canvas-container';
+            container.id = docId;
+            container.innerHTML = `<div class="doc-header"><span>📄 ${file.name}</span></div>`;
+            
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            container.appendChild(canvas);
+            document.getElementById('viewer').appendChild(container);
+
+            const arrayBuffer = await file.arrayBuffer();
+            const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+            const page = await pdf.getPage(1);
+            
+            // Escala para calidad de detección
+            const viewport = page.getViewport({ scale: 1.5 });
+            canvas.width = viewport.width;
+            canvas.height = viewport.height;
+            
+            await page.render({ canvasContext: ctx, viewport: viewport }).promise;
+
+            const bgImg = new Image();
+            bgImg.src = canvas.toDataURL('image/jpeg', 0.9);
+
+            const docObj = { id: docId, name: file.name, canvas, ctx, bgImg, zones: [] };
+            documents.push(docObj);
+            
+            initDrawing(docObj);
+            updateSidebar();
+        }
+
+        function initDrawing(doc) {
+            let isDrawing = false, sX, sY;
+            
+            doc.canvas.onmousedown = e => {
+                const rect = doc.canvas.getBoundingClientRect();
+                sX = (e.clientX - rect.left) * (doc.canvas.width / rect.width);
+                sY = (e.clientY - rect.top) * (doc.canvas.height / rect.height);
+                isDrawing = true;
+            };
+
+            doc.canvas.onmousemove = e => {
+                if (!isDrawing) return;
+                const rect = doc.canvas.getBoundingClientRect();
+                const curX = (e.clientX - rect.left) * (doc.canvas.width / rect.width);
+                const curY = (e.clientY - rect.top) * (doc.canvas.height / rect.height);
+                
+                doc.ctx.clearRect(0,0,doc.canvas.width, doc.canvas.height);
+                doc.ctx.drawImage(doc.bgImg, 0, 0);
+                drawExistingZones(doc);
+                
+                doc.ctx.strokeStyle = '#6366f1'; 
+                doc.ctx.setLineDash([8, 4]);
+                doc.ctx.lineWidth = 3;
+                doc.ctx.strokeRect(sX, sY, curX - sX, curY - sY);
+            };
+
+            doc.canvas.onmouseup = e => {
+                if (!isDrawing) return;
+                isDrawing = false;
+                const rect = doc.canvas.getBoundingClientRect();
+                const eX = (e.clientX - rect.left) * (doc.canvas.width / rect.width);
+                const eY = (e.clientY - rect.top) * (doc.canvas.height / rect.height);
+                
+                const newZone = {
+                    id: 'z-' + Date.now(),
+                    x: Math.min(sX, eX), y: Math.min(sY, eY),
+                    w: Math.abs(eX - sX), h: Math.abs(eY - sY),
+                    count: '...', detections: [], processing: true
+                };
+                
+                if (newZone.w > 20 && newZone.h > 20) {
+                    doc.zones.push(newZone);
+                    // IMPORTANTE: Dibujamos inmediatamente y actualizamos sidebar antes de la petición
+                    doc.ctx.drawImage(doc.bgImg, 0, 0);
+                    drawExistingZones(doc);
+                    updateSidebar();
+                    
+                    // Disparamos la petición sin bloquear el flujo (sin await)
+                    analyzeZone(doc, newZone);
+                }
+            };
+        }
+
+        function drawExistingZones(doc) {
+            doc.ctx.setLineDash([]);
+            doc.zones.forEach(z => {
+                // Color azul punteado si está cargando, verde sólido si terminó
+                doc.ctx.strokeStyle = z.processing ? '#6366f1' : '#10b981';
+                doc.ctx.setLineDash(z.processing ? [5, 5] : []);
+                doc.ctx.lineWidth = 4;
+                doc.ctx.strokeRect(z.x, z.y, z.w, z.h);
+                
+                // Dibujar puertas encontradas
+                z.detections.forEach(d => {
+                    doc.ctx.strokeStyle = '#f59e0b';
+                    doc.ctx.setLineDash([]);
+                    doc.ctx.lineWidth = 2;
+                    doc.ctx.strokeRect(z.x + d.x, z.y + d.y, d.width, d.height);
+                });
+            });
+        }
+
+        async function analyzeZone(doc, zone) {
+            // Recorte para la IA
+            const offCanvas = document.createElement('canvas');
+            offCanvas.width = zone.w; offCanvas.height = zone.h;
+            const offCtx = offCanvas.getContext('2d');
+            offCtx.drawImage(doc.bgImg, zone.x, zone.y, zone.w, zone.h, 0, 0, zone.w, zone.h);
+            const b64 = offCanvas.toDataURL('image/jpeg', 0.8).split(',')[1];
+            
+            try {
+                const res = await fetch('/analyze_zone_fast', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        image_b64: b64,
+                        min_confidence: document.getElementById('confSlider').value
+                    })
+                });
+                const data = await res.json();
+                zone.count = data.count || 0;
+                zone.detections = data.detections || [];
+            } catch (e) { 
+                zone.count = "Error"; 
+            } finally {
+                zone.processing = false;
+                // Redibujamos el canvas del documento específico y actualizamos sidebar
+                doc.ctx.drawImage(doc.bgImg, 0, 0);
+                drawExistingZones(doc);
+                updateSidebar();
+            }
+        }
+
+        function updateSidebar() {
+            const list = document.getElementById('resultsList');
+            list.innerHTML = '';
+            
+            documents.forEach(doc => {
+                const docDiv = document.createElement('div');
+                docDiv.className = 'doc-summary';
+                docDiv.innerHTML = `<span class="doc-title">${doc.name}</span>`;
+                
+                doc.zones.forEach((z, idx) => {
+                    const zDiv = document.createElement('div');
+                    zDiv.className = 'zone-result';
+                    zDiv.innerHTML = `
+                        <span>Selección ${idx + 1}</span> 
+                        <span class="count-badge ${z.processing ? 'badge-processing' : ''}">${z.count}</span>
+                    `;
+                    docDiv.appendChild(zDiv);
+                });
+                list.appendChild(docDiv);
+            });
+        }
+
+        // Auto-load PDFs on startup
+        window.addEventListener('DOMContentLoaded', async () => {
+             try {
+                const response = await fetch('/list_pdfs');
+                const fileNames = await response.json();
+                
+                if (fileNames.length > 0) {
+                    document.getElementById('emptyState').style.display = 'none';
+                    // Load sequentially to maintain order and prevent UI blocking
+                    for (const name of fileNames) {
+                        try {
+                            const res = await fetch(`/pdfs/${encodeURIComponent(name)}`);
+                            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                            const blob = await res.blob();
+                            const file = new File([blob], name, { type: 'application/pdf' });
+                            await processNewPDF(file);
+                        } catch (e) {
+                            console.error("Error auto-loading", name, e);
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error("Failed to fetch PDF list", e);
+            }
+        });
+    </script>
+</body>
+</html>
