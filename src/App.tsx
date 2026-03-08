@@ -42,7 +42,8 @@ function App() {
     const n8nUrl = "https://n8n-linssestudio.duckdns.org/workflow/MIqelspKYbVDZGrm";
     const sheetsUrl = "https://docs.google.com/spreadsheets/d/1L_lv-qNzAe76lNnDSUc-Mtpk3PvYR2DqoxgRyOmdSx0/edit#gid=0";
     // Usamos el Webhook de producción (sin -test) para que se ejecute en el servidor real
-    const webhookUrl = "https://n8n-linssestudio.duckdns.org/webhook/df784b8d-638e-4a6c-9404-5868fa05ed92";
+    // Endpoint Webhook en n8n para disparar el flujo desde el Dashboard
+    const webhookUrl = "https://n8n-linssestudio.duckdns.org/webhook/ejecutar-pipeline-cdmx";
 
     const handleExecute = async () => {
         setIsExecuting(true);
