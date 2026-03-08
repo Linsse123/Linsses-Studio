@@ -54,15 +54,16 @@ function App() {
             await new Promise(r => setTimeout(r, 1000));
         }
 
-        // Disparo real al servidor n8n
+        // Disparo "fire and forget" al servidor n8n (evita bloqueos de CORS en el navegador)
         try {
-            await fetch(webhookUrl, {
+            fetch(webhookUrl, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ trigger: 'web-dashboard', timestamp: new Date().toISOString() })
+                mode: 'no-cors',
+                body: 'trigger=web-dashboard'
             });
+            console.log("Señal enviada al servidor n8n.");
         } catch (e) {
-            console.log("Pipeline disparado en servidor.");
+            console.log("Error al contactar el servidor.");
         }
 
         setIsExecuting(false);
