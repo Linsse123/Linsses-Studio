@@ -40,7 +40,7 @@ function App() {
     const [executionStep, setExecutionStep] = useState(-1);
 
     const n8nUrl = "https://n8n-linssestudio.duckdns.org/workflow/MIqelspKYbVDZGrm";
-    const sheetsUrl = "https://docs.google.com/spreadsheets/d/1lwYeT9iocQRlP3H_54RdPTq2F2lq4M2x1hurKD_pcfE";
+    const sheetsUrl = "https://docs.google.com/spreadsheets/d/1L_lv-qNzAe76lNnDSUc-Mtpk3PvYR2DqoxgRyOmdSx0/edit#gid=0";
     // Usamos el Webhook de producción (sin -test) para que se ejecute en el servidor real
     const webhookUrl = "https://n8n-linssestudio.duckdns.org/webhook/df784b8d-638e-4a6c-9404-5868fa05ed92";
 
@@ -131,8 +131,8 @@ function App() {
                                             onClick={handleExecute}
                                             disabled={isExecuting}
                                             className={`px-8 py-3 rounded-xl font-bold flex items-center gap-3 transition-all ${isExecuting
-                                                    ? 'bg-white/10 text-white/40 cursor-not-allowed'
-                                                    : 'bg-emerald-500 hover:bg-emerald-400 text-black shadow-lg shadow-emerald-500/20 active:scale-95'
+                                                ? 'bg-white/10 text-white/40 cursor-not-allowed'
+                                                : 'bg-emerald-500 hover:bg-emerald-400 text-black shadow-lg shadow-emerald-500/20 active:scale-95'
                                                 }`}
                                         >
                                             {isExecuting ? <Activity className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4 fill-current" />}
@@ -211,8 +211,8 @@ function TabButton({ active, onClick, icon, label }: any) {
         <button
             onClick={onClick}
             className={`px-6 py-3 rounded-xl flex items-center gap-3 transition-all font-medium ${active
-                    ? 'bg-white/10 text-white shadow-lg'
-                    : 'text-white/40 hover:text-white/60 hover:bg-white/5'
+                ? 'bg-white/10 text-white shadow-lg'
+                : 'text-white/40 hover:text-white/60 hover:bg-white/5'
                 }`}
         >
             {icon} {label}
