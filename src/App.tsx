@@ -80,7 +80,7 @@ function App() {
                     </h1>
                     <p className="text-[#ededed]/60 text-lg flex items-center gap-2">
                         <Activity className={`w-4 h-4 ${isExecuting ? 'animate-pulse text-emerald-400' : 'text-white/20'}`} />
-                        Centro de Producción | n8n v2.9.2
+                        Centro de Producción | n8n v2.9.3
                     </p>
                 </motion.div>
 
